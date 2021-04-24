@@ -1,3 +1,15 @@
+# Get data
+```shell
+wget https://raw.githubusercontent.com/hfawaz/cd-diagram/master/FordA/FordA_TRAIN.tsv
+wget https://raw.githubusercontent.com/hfawaz/cd-diagram/master/FordA/FordA_TEST.tsv
+
+```
+
+Set remote origin
+```shell
+git remote set-url origin https://github.com/mirfan899/InceptionTime.git
+```
+
 # InceptionTime: Finding AlexNet for Time Series Classification
 This is the companion repository for our paper titled [InceptionTime: Finding AlexNet for Time Series Classification](https://link.springer.com/article/10.1007/s10618-020-00710-y) published in [Data Mining and Knowledge Discovery](https://www.springer.com/journal/10618) and also available on [ArXiv](https://arxiv.org/pdf/1909.04939.pdf). 
 

@@ -2,11 +2,12 @@
 import keras
 import numpy as np
 import time
-
+import tensorflow
 from utils.utils import save_logs
 from utils.utils import calculate_metrics
 from utils.utils import save_test_duration
 
+from tensorflow.python.client import device_lib
 
 class Classifier_INCEPTION:
 
@@ -35,7 +36,7 @@ class Classifier_INCEPTION:
     def _inception_module(self, input_tensor, stride=1, activation='linear'):
 
         if self.use_bottleneck and int(input_tensor.shape[-1]) > 1:
-            input_inception = keras.layers.Conv1D(filters=self.bottleneck_size, kernel_size=1,
+            input_inception = tensorflow.keras.layers.Conv1D(filters=self.bottleneck_size, kernel_size=1,
                                                   padding='same', activation=activation, use_bias=False)(input_tensor)
         else:
             input_inception = input_tensor
@@ -46,33 +47,33 @@ class Classifier_INCEPTION:
         conv_list = []
 
         for i in range(len(kernel_size_s)):
-            conv_list.append(keras.layers.Conv1D(filters=self.nb_filters, kernel_size=kernel_size_s[i],
+            conv_list.append(tensorflow.keras.layers.Conv1D(filters=self.nb_filters, kernel_size=kernel_size_s[i],
                                                  strides=stride, padding='same', activation=activation, use_bias=False)(
                 input_inception))
 
-        max_pool_1 = keras.layers.MaxPool1D(pool_size=3, strides=stride, padding='same')(input_tensor)
+        max_pool_1 = tensorflow.keras.layers.MaxPool1D(pool_size=3, strides=stride, padding='same')(input_tensor)
 
-        conv_6 = keras.layers.Conv1D(filters=self.nb_filters, kernel_size=1,
+        conv_6 = tensorflow.keras.layers.Conv1D(filters=self.nb_filters, kernel_size=1,
                                      padding='same', activation=activation, use_bias=False)(max_pool_1)
 
         conv_list.append(conv_6)
 
-        x = keras.layers.Concatenate(axis=2)(conv_list)
-        x = keras.layers.BatchNormalization()(x)
-        x = keras.layers.Activation(activation='relu')(x)
+        x = tensorflow.keras.layers.Concatenate(axis=2)(conv_list)
+        x = tensorflow.keras.layers.BatchNormalization()(x)
+        x = tensorflow.keras.layers.Activation(activation='relu')(x)
         return x
 
     def _shortcut_layer(self, input_tensor, out_tensor):
-        shortcut_y = keras.layers.Conv1D(filters=int(out_tensor.shape[-1]), kernel_size=1,
+        shortcut_y = tensorflow.keras.layers.Conv1D(filters=int(out_tensor.shape[-1]), kernel_size=1,
                                          padding='same', use_bias=False)(input_tensor)
-        shortcut_y = keras.layers.normalization.BatchNormalization()(shortcut_y)
+        shortcut_y = tensorflow.keras.layers.BatchNormalization()(shortcut_y)
 
-        x = keras.layers.Add()([shortcut_y, out_tensor])
-        x = keras.layers.Activation('relu')(x)
+        x = tensorflow.keras.layers.Add()([shortcut_y, out_tensor])
+        x = tensorflow.keras.layers.Activation('relu')(x)
         return x
 
     def build_model(self, input_shape, nb_classes):
-        input_layer = keras.layers.Input(input_shape)
+        input_layer = tensorflow.keras.layers.Input(input_shape)
 
         x = input_layer
         input_res = input_layer
@@ -85,21 +86,21 @@ class Classifier_INCEPTION:
                 x = self._shortcut_layer(input_res, x)
                 input_res = x
 
-        gap_layer = keras.layers.GlobalAveragePooling1D()(x)
+        gap_layer = tensorflow.keras.layers.GlobalAveragePooling1D()(x)
 
-        output_layer = keras.layers.Dense(nb_classes, activation='softmax')(gap_layer)
+        output_layer = tensorflow.keras.layers.Dense(nb_classes, activation='softmax')(gap_layer)
 
-        model = keras.models.Model(inputs=input_layer, outputs=output_layer)
+        model = tensorflow.keras.models.Model(inputs=input_layer, outputs=output_layer)
 
-        model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.Adam(),
+        model.compile(loss='categorical_crossentropy', optimizer=tensorflow.keras.optimizers.Adam(),
                       metrics=['accuracy'])
 
-        reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50,
+        reduce_lr = tensorflow.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=50,
                                                       min_lr=0.0001)
 
         file_path = self.output_directory + 'best_model.hdf5'
 
-        model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=file_path, monitor='loss',
+        model_checkpoint = tensorflow.keras.callbacks.ModelCheckpoint(filepath=file_path, monitor='loss',
                                                            save_best_only=True)
 
         self.callbacks = [reduce_lr, model_checkpoint]
@@ -107,7 +108,7 @@ class Classifier_INCEPTION:
         return model
 
     def fit(self, x_train, y_train, x_val, y_val, y_true, plot_test_acc=False):
-        if len(keras.backend.tensorflow_backend._get_available_gpus()) == 0:
+        if len((device_lib.list_local_devices())) == 0:
             print('error no gpu')
             exit()
         # x_val and y_val are only used to monitor the test loss and NOT for training
@@ -144,14 +145,14 @@ class Classifier_INCEPTION:
         df_metrics = save_logs(self.output_directory, hist, y_pred, y_true, duration,
                                plot_test_acc=plot_test_acc)
 
-        keras.backend.clear_session()
+        tensorflow.keras.backend.clear_session()
 
         return df_metrics
 
     def predict(self, x_test, y_true, x_train, y_train, y_test, return_df_metrics=True):
         start_time = time.time()
         model_path = self.output_directory + 'best_model.hdf5'
-        model = keras.models.load_model(model_path)
+        model = tensorflow.keras.models.load_model(model_path)
         y_pred = model.predict(x_test, batch_size=self.batch_size)
         if return_df_metrics:
             y_pred = np.argmax(y_pred, axis=1)

@@ -27,12 +27,17 @@ def check_if_file_exits(file_name):
     return os.path.exists(file_name)
 
 
+# def readucr(filename, delimiter='\t'):
+#     print(filename)
+#     data = np.loadtxt(filename, delimiter=delimiter)
+#     Y = data[:, 0]
+#     X = data[:, 1:]
+#     return X, Y
 def readucr(filename, delimiter=','):
     data = np.loadtxt(filename, delimiter=delimiter)
-    Y = data[:, 0]
-    X = data[:, 1:]
-    return X, Y
-
+    y = data[:, 0]
+    x = data[:, 1:]
+    return x, y.astype(int)
 
 def readsits(filename, delimiter=','):
     data = np.loadtxt(filename, delimiter=delimiter)
@@ -46,7 +51,7 @@ def create_directory(directory_path):
         return None
     else:
         try:
-            os.makedirs(directory_path)
+            os.makedirs(directory_path, exist_ok=True)
         except:
             # in case another machine created the path meanwhile !:(
             return None
@@ -73,9 +78,12 @@ def read_all_datasets(root_dir, archive_name):
     if archive_name == 'TSC':
         for dataset_name in DATASET_NAMES:
             root_dir_dataset = root_dir + '/archives/' + archive_name + '/' + dataset_name + '/'
+            print(root_dir_dataset)
             file_name = root_dir_dataset + dataset_name
-            x_train, y_train = readucr(file_name + '_TRAIN')
-            x_test, y_test = readucr(file_name + '_TEST')
+            x_train, y_train = readucr(file_name + '_TRAIN.csv')
+            x_test, y_test = readucr(file_name + '_TEST.csv')
+            # x_train, y_train = readucr(file_name + '_TRAIN.tsv')
+            # x_test, y_test = readucr(file_name + '_TEST.tsv')
 
             datasets_dict[dataset_name] = (x_train.copy(), y_train.copy(), x_test.copy(),
                                            y_test.copy())
@@ -206,9 +214,9 @@ def save_logs(output_directory, hist, y_pred, y_true, duration,
     df_best_model['best_model_train_loss'] = row_best_model['loss']
     if plot_test_acc:
         df_best_model['best_model_val_loss'] = row_best_model['val_loss']
-    df_best_model['best_model_train_acc'] = row_best_model['acc']
+    df_best_model['best_model_train_acc'] = row_best_model['accuracy']
     if plot_test_acc:
-        df_best_model['best_model_val_acc'] = row_best_model['val_acc']
+        df_best_model['best_model_val_acc'] = row_best_model['val_accuracy']
     if lr == True:
         df_best_model['best_model_learning_rate'] = row_best_model['lr']
     df_best_model['best_model_nb_epoch'] = index_best_model
