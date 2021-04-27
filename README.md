@@ -1,19 +1,28 @@
-# Get data
+## Install requirements
+I have tested the code on Python 3.6.9
 ```shell
-wget https://raw.githubusercontent.com/hfawaz/cd-diagram/master/FordA/FordA_TRAIN.tsv
-wget https://raw.githubusercontent.com/hfawaz/cd-diagram/master/FordA/FordA_TEST.tsv
-
+pip install -r requirements.txt
 ```
 
-Set remote origin
+## Directory structure
+Create and place the csv files in data directory.
+
+Create a features directory
+
+## Train the model.
+run the script 
 ```shell
-git remote set-url origin https://github.com/mirfan899/InceptionTime.git
+ts.py
 ```
 
-Test it
+## Run API flask server
+```shell
+python api.py
+```
+
+Test it by providing values as json. You need to provide only `cp`,`kvFst`,`kvTrgger`,`ripple_angle` and `wave_angle` values.
 ```shell
 curl -X 'POST' 'http://127.0.0.1:5000/api/wave_type' -H 'Content-Type: application/json' -d '{"row": "1111,-1.81898940354586E-12,-2.59855629077979E-13,41.1859251657097,41.1859251657097"}'
-
 ```
 # InceptionTime: Finding AlexNet for Time Series Classification
 This is the companion repository for our paper titled [InceptionTime: Finding AlexNet for Time Series Classification](https://link.springer.com/article/10.1007/s10618-020-00710-y) published in [Data Mining and Knowledge Discovery](https://www.springer.com/journal/10618) and also available on [ArXiv](https://arxiv.org/pdf/1909.04939.pdf). 
