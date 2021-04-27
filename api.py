@@ -1,53 +1,43 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-import torch
+from tensorflow.keras.preprocessing import sequence
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+INVERSE_WAVE_TYPE = {0: "down", 1: "up"}
 
-tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
-model = AutoModelForMaskedLM.from_pretrained("xlm-roberta-base").to("cuda")
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+model = keras.models.load_model("models/best_model.h5")
 
 
-def get_wave_type(sentence):
-    encodings = tokenizer(sentence, return_tensors='pt')
-    max_length = 1024
-    stride = 512
-
-    lls = []
-
-    for i in range(0, encodings.input_ids.size(1), stride):
-        begin_loc = max(i + stride - max_length, 0)
-        end_loc = min(i + stride, encodings.input_ids.size(1))
-        trg_len = end_loc - i  # may be different from stride on last loop
-        input_ids = encodings.input_ids[:, begin_loc:end_loc].to("cuda")
-        target_ids = input_ids.clone()
-        target_ids[:, :-trg_len] = -100
-
-        with torch.no_grad():
-            outputs = model(input_ids, labels=target_ids)
-            log_likelihood = outputs[0] * trg_len
-
-        lls.append(log_likelihood)
-
-    ppl = torch.exp(torch.stack(lls).sum() / end_loc)
-
-    return {"sentence": sentence, "score": ppl.item()}
+def get_wave_type(row):
+    if row:
+        signal = row.split(",")
+        signal = np.array([float(x) for x in signal])
+        features = sequence.pad_sequences([signal], maxlen=101, padding='post', dtype='float', truncating='post')
+        pred = model.predict(features, batch_size=32)
+        wave_type = np.argmax(pred, axis=1)
+        return {"wave_type": INVERSE_WAVE_TYPE[wave_type[0]]}
+    else:
+        return {"message": "provide the row data."}
 
 
 app = Flask(__name__)
 api = Api(app)
 
 parser = reqparse.RequestParser()
-parser.add_argument("group", required=True, type=str, help="please provide the sentence to get perplexity score.")
+parser.add_argument("row", required=True, type=str, help="please provide the row to get wave_type")
 
 
 class WaveClass(Resource):
     def get(self):
-        return {"message": "Welcome to Transformers Perplexity API", "status": 200}
+        return {"message": "Welcome to InceptionTime API", "status": 200}
 
     def post(self):
         args = parser.parse_args()
-        if args["group"]:
-            result = get_wave_type(args["group"])
+        if args["row"]:
+            result = get_wave_type(args["row"])
             return result
         else:
             return {"You should provide a sentence."}

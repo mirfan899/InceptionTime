@@ -8,6 +8,7 @@ data = pd.read_csv("data/5min-patterns.csv")
 total_groups = data["wave_grp_id"].max()
 
 total_features = []
+train_features = []
 max_count = []
 # for grp in range(len(total_groups)):
 for grp in range(total_groups):
@@ -19,16 +20,17 @@ for grp in range(total_groups):
         features.append(rows["cp"][i])
         features.append(rows["kvFst"][i])
         features.append(rows["kvTrgger"][i])
-        # features.append(rows["ripple_angle"][i])
+        features.append(rows[" ripple_angle"][i])
         features.append(rows["wave_angle"][i])
     features.insert(0, WAVE_TYPE[rows["wave_type"][rows.index[0]]])
     total_features.append(features)
+    train_features.append(features)
 
-total_features = sequence.pad_sequences(total_features, maxlen=200, padding='post', dtype='float', truncating='post')
-print(np.array(total_features).shape)
+train_features = sequence.pad_sequences(train_features, maxlen=100, padding='post', dtype='float', truncating='post')
+print(np.array(train_features).shape)
 
-with open("Wave_TRAIN.csv", "w") as f:
-    for line in total_features:
+with open("features/Wave_TRAIN.csv", "w") as f:
+    for line in train_features:
         feats = [str(i) for i in line]
         f.write(",".join(feats) + "\n")
 
@@ -36,7 +38,7 @@ with open("Wave_TRAIN.csv", "w") as f:
 data = pd.read_csv("data/180min-patterns.csv")
 total_groups = data["wave_grp_id"].max()
 
-total_features = []
+test_features = []
 max_count = []
 # for grp in range(len(total_groups)):
 for grp in range(total_groups):
@@ -48,15 +50,24 @@ for grp in range(total_groups):
         features.append(rows["cp"][i])
         features.append(rows["kvFst"][i])
         features.append(rows["kvTrgger"][i])
-        # features.append(rows["ripple_angle"][i])
+        features.append(rows["ripple_angle"][i])
         features.append(rows["wave_angle"][i])
     features.insert(0, WAVE_TYPE[rows["wave_type"][rows.index[0]]])
+    test_features.append(features)
     total_features.append(features)
 
-total_features = sequence.pad_sequences(total_features, maxlen=200, padding='post', dtype='float', truncating='post')
+test_features = sequence.pad_sequences(test_features, maxlen=100, padding='post', dtype='float', truncating='post')
+
+with open("features/Wave_TEST.csv", "w") as f:
+    for line in test_features:
+        feats = [str(i) for i in line]
+        f.write(",".join(feats) + "\n")
+
+
+total_features = sequence.pad_sequences(total_features, maxlen=100, padding='post', dtype='float', truncating='post')
 print(np.array(total_features).shape)
 
-with open("Wave_TEST.csv", "w") as f:
+with open("features/Wave_Data.csv", "w") as f:
     for line in total_features:
         feats = [str(i) for i in line]
         f.write(",".join(feats) + "\n")
