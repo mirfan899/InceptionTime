@@ -27,6 +27,8 @@ for c in classes:
     c_x_train = x_train[y_train == c]
     plt.plot(c_x_train[0], label="class " + str(c))
 plt.legend(loc="best")
+classes = plt.gcf()
+classes.savefig("classes.png")
 plt.show()
 plt.close()
 
@@ -71,10 +73,6 @@ def make_model(input_shape):
     conv3 = keras.layers.BatchNormalization()(conv3)
     conv3 = keras.layers.ReLU()(conv3)
 
-    # conv4 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(conv3)
-    # conv4 = keras.layers.BatchNormalization()(conv4)
-    # conv4 = keras.layers.ReLU()(conv4)
-    # gap = keras.layers.GlobalAveragePooling1D()(conv4)
     gap = keras.layers.GlobalAveragePooling1D()(conv3)
 
     output_layer = keras.layers.Dense(1, activation="sigmoid")(gap)
@@ -140,5 +138,19 @@ plt.title("model " + metric)
 plt.ylabel(metric, fontsize="large")
 plt.xlabel("epoch", fontsize="large")
 plt.legend(["train", "val"], loc="best")
+fig1 = plt.gcf()
+fig1.savefig('accuracy.png')
 plt.show()
-plt.close()
+
+
+plt.clf()
+plt.figure()
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+fig2 = plt.gcf()
+fig2.savefig('loss.png')
+plt.show()
