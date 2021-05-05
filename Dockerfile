@@ -1,8 +1,8 @@
 FROM python:3.6
 
-RUN mkdir src/app
+WORKDIR WORKDIR /opt/app
 
-WORKDIR src/app
+COPY . .
 
 EXPOSE 5000
 
