@@ -19,7 +19,7 @@ root_url = "features/Wave_Type.csv"
 
 X, Y = readucr(root_url)
 
-x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.20, random_state=42)
 classes = np.unique(np.concatenate((y_train, y_test), axis=0))
 
 plt.figure()
@@ -28,7 +28,7 @@ for c in classes:
     plt.plot(c_x_train[0], label="class " + str(c))
 plt.legend(loc="best")
 classes = plt.gcf()
-classes.savefig("classes.png")
+classes.savefig("pngs/classes.png")
 plt.show()
 plt.close()
 
@@ -87,7 +87,7 @@ keras.utils.plot_model(model, show_shapes=True)
 ## Train the model
 """
 
-epochs = 50
+epochs = 100
 batch_size = 32
 
 callbacks = [
@@ -110,7 +110,7 @@ history = model.fit(
     batch_size=batch_size,
     epochs=epochs,
     callbacks=callbacks,
-    validation_split=0.2,
+    validation_split=0.3,
     verbose=1,
 )
 
@@ -139,7 +139,7 @@ plt.ylabel(metric, fontsize="large")
 plt.xlabel("epoch", fontsize="large")
 plt.legend(["train", "val"], loc="best")
 fig1 = plt.gcf()
-fig1.savefig('accuracy.png')
+fig1.savefig('pngs/accuracy.png')
 plt.show()
 
 
@@ -152,5 +152,5 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 fig2 = plt.gcf()
-fig2.savefig('loss.png')
+fig2.savefig('pngs/loss.png')
 plt.show()
