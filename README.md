@@ -23,6 +23,8 @@ python api.py
 Test it by providing values as json. You need to provide only `cp`,`kvFst`,`kvTrgger`,`ripple_angle` and `wave_angle` values.
 ```shell
 curl -X 'POST' 'http://127.0.0.1:5000/api/wave_type' -H 'Content-Type: application/json' -d '{"row": "1111,-1.81898940354586E-12,-2.59855629077979E-13,41.1859251657097,41.1859251657097"}'
+curl -X 'POST' 'http://127.0.0.1:5000/api/wave_type' -H 'Content-Type: application/json' -d '{"row": "1110.5,-427.857142857147,-61.1224489795926, 22.6198649480404, 22.6198649480404"}'
+curl -X 'POST' 'http://127.0.0.1:5000/api/wave_type' -H 'Content-Type: application/json' -d '{"row": "1112.25,-1618.32236044758,-521.819407738085, 7.1250163489018, 7.1250163489018"}'
 ```
 
 ## Docker Setup
@@ -59,3 +61,8 @@ Run docker flask app
 ```shell
 docker run -d -p 5000:9007 wave_type
 ```
+
+
+## Some insights
+Whenever `wave_angle` and `ripple_angle` are 0s `wave_grp_id`(most probably wave_type) changes.
+Whenever `ripple_angle` is 0 `ripple_type` changes.
